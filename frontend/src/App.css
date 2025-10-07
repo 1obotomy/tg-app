@@ -27,7 +27,7 @@ form {
   border-radius: 18px;
 }
 
-input[type="text"] {
+input[type="text"], input[type="date"], input[type="time"] {
   font-size: 1.2rem;
   padding: 15px;
   border: none;
@@ -44,16 +44,81 @@ input[type="text"]::placeholder {
   font-weight: 400;
 }
 
-input[type="date"], input[type="time"] {
-  font-size: 1.2rem;
-  padding: 15px;
-  border: none;
-  border-radius: 10px;
-  background: #23272A;
-  color: #F5F6FA;
-  outline: none;
+/* Стили для выбора эмодзи */
+.emoji-selector label {
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 2px;
+  color: #F5F6FA;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.emoji-btn {
+  background: #23272A;
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emoji-btn:hover {
+  background: #3B82F6;
+}
+
+.emoji-btn.selected {
+  background: #3B82F6;
+  border-color: #2563EB;
+}
+
+/* Стили для дней недели */
+.repeat-days label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #F5F6FA;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.weekdays-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.weekday-checkbox {
+  background: #23272A;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.weekday-checkbox:hover {
+  background: #3B82F6;
+}
+
+.weekday-checkbox input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.weekday-checkbox span {
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 button[type="submit"] {
@@ -61,7 +126,7 @@ button[type="submit"] {
   padding: 16px 0;
   border-radius: 12px;
   border: none;
-  background: #3B82F6; /* яркий синий */
+  background: #3B82F6;
   color: #F5F6FA;
   font-weight: 700;
   transition: background 0.2s;
@@ -97,6 +162,12 @@ li span {
   font-size: 1.15rem;
 }
 
+.repeat-info {
+  color: #B9BBBE;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
 li button {
   background: #3B82F6;
   color: #fff;
@@ -114,7 +185,7 @@ li button:focus {
   background: #2563EB;
 }
 
-/* Адаптивные стили для мобильных */
+/* Адаптивные стили */
 @media (max-width: 600px) {
   .app-container {
     max-width: 99vw;
@@ -135,5 +206,11 @@ li button:focus {
   li button {
     font-size: 1.07rem;
     padding: 10px 0;
+  }
+  .emoji-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .weekdays-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
