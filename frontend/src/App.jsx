@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
 
-// Укажи новый backend Render URL здесь!
 const API_URL = 'https://tg-app-backend-lojl.onrender.com';
 
 function App() {
@@ -34,18 +34,19 @@ function App() {
   }
 
   return (
-    <div>
+    <div className="app-container">
       <h2>Календарь событий</h2>
       <form onSubmit={addEvent}>
         <input
+          type="text"
           required
-          placeholder="Название"
+          placeholder="Название события"
           value={form.title}
           onChange={e => setForm({ ...form, title: e.target.value })}
         />
         <input
-          required
           type="date"
+          required
           value={form.date}
           onChange={e => setForm({ ...form, date: e.target.value })}
         />
@@ -54,7 +55,10 @@ function App() {
       <ul>
         {events.map(ev => (
           <li key={ev.id}>
-            {ev.title} – {ev.date}
+            <div>
+              <div style={{ fontWeight: 600 }}>{ev.title}</div>
+              <span>{ev.date}</span>
+            </div>
             <button onClick={() => deleteEvent(ev.id)}>Удалить</button>
           </li>
         ))}
