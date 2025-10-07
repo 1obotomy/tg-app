@@ -27,7 +27,7 @@ form {
   border-radius: 18px;
 }
 
-input[type="text"], input[type="date"] {
+input[type="text"] {
   font-size: 1.2rem;
   padding: 15px;
   border: none;
@@ -36,11 +36,24 @@ input[type="text"], input[type="date"] {
   color: #F5F6FA;
   outline: none;
   font-weight: 600;
+  margin-bottom: 2px;
 }
 
 input[type="text"]::placeholder {
   color: #B9BBBE;
   font-weight: 400;
+}
+
+input[type="date"], input[type="time"] {
+  font-size: 1.2rem;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #23272A;
+  color: #F5F6FA;
+  outline: none;
+  font-weight: 600;
+  margin-bottom: 2px;
 }
 
 button[type="submit"] {
