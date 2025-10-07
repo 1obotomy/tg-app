@@ -3,18 +3,16 @@ import './App.css';
 
 const API_URL = 'https://tg-app-backend-lojl.onrender.com';
 
-// Доступные эмодзи для выбора
 const EMOJI_OPTIONS = ['🎉', '📅', '🏠', '💼', '🏃‍♂️', '📚', '🍽️', '🎵', '💊', '🛒', '✈️', '🎯'];
 
-// Дни недели (0 - Вс, 1 - Пн, ..., 6 - Сб)
 const WEEKDAYS = [
-  { id: 1, name: 'Пн', fullName: 'Понедельник' },
-  { id: 2, name: 'Вт', fullName: 'Вторник' },
-  { id: 3, name: 'Ср', fullName: 'Среда' },
-  { id: 4, name: 'Чт', fullName: 'Четверг' },
-  { id: 5, name: 'Пт', fullName: 'Пятница' },
-  { id: 6, name: 'Сб', fullName: 'Суббота' },
-  { id: 0, name: 'Вс', fullName: 'Воскресенье' }
+  { id: 1, name: 'Пн' },
+  { id: 2, name: 'Вт' },
+  { id: 3, name: 'Ср' },
+  { id: 4, name: 'Чт' },
+  { id: 5, name: 'Пт' },
+  { id: 6, name: 'Сб' },
+  { id: 0, name: 'Вс' }
 ];
 
 function App() {
@@ -24,7 +22,8 @@ function App() {
     date: '', 
     time: '', 
     emoji: '📅', 
-    repeatDays: [] 
+    repeatDays: [], 
+    isRepeated: false 
   });
 
   useEffect(() => {
@@ -47,21 +46,51 @@ function App() {
     }));
   };
 
+  const handleRepeatedSwitch = () => {
+    setForm(prev => ({
+      ...prev,
+      isRepeated: !prev.isRepeated,
+      repeatDays: !prev.isRepeated ? [] : prev.repeatDays,
+      date: !prev.isRepeated ? prev.date : '',
+    }));
+  };
+
   const addEvent = (e) => {
     e.preventDefault();
-    if (!form.date || !form.time) {
-      alert('Введите дату и время!');
+
+    if (!form.title.trim()) {
+      alert('Введите название события!');
       return;
     }
 
-    // Формируем datetime для API
-    const dateTime = `${form.date}T${form.time}`;
+    if (form.isRepeated) {
+      if (!form.time) {
+        alert('Выберите время события!');
+        return;
+      }
+      if (!form.repeatDays.length) {
+        alert('Выберите хотя бы один день недели!');
+        return;
+      }
+    } else {
+      if (!form.date || !form.time) {
+        alert('Введите дату и время!');
+        return;
+      }
+    }
+
+    // Формируем данные для API
     const eventData = {
       title: form.title,
-      date: dateTime,
       emoji: form.emoji,
-      repeatDays: form.repeatDays
+      repeatDays: form.isRepeated ? form.repeatDays : [],
+      isRepeated: form.isRepeated,
+      time: form.time
     };
+    // Если однократное — поставить обычную дату и время
+    if (!form.isRepeated) {
+      eventData.date = `${form.date}T${form.time}`;
+    }
 
     fetch(API_URL + '/api/events', {
       method: 'POST',
@@ -72,7 +101,7 @@ function App() {
       .then(ev => setEvents([...events, ev]))
       .catch(e => alert('Ошибка добавления: ' + e.message));
     
-    setForm({ title: '', date: '', time: '', emoji: '📅', repeatDays: [] });
+    setForm({ title: '', date: '', time: '', emoji: '📅', repeatDays: [], isRepeated: false });
   };
 
   const deleteEvent = (id) => {
@@ -81,21 +110,22 @@ function App() {
       .catch(e => alert('Ошибка удаления: ' + e.message));
   };
 
-  const formatEventDate = (dateStr) => {
-    try {
-      return new Date(dateStr).toLocaleString('ru-RU', { 
-        dateStyle: 'short', 
-        timeStyle: 'short' 
-      });
-    } catch {
-      return dateStr;
+  const formatEventDate = (ev) => {
+    if (ev.isRepeated && ev.repeatDays && ev.repeatDays.length) {
+      const days = ev.repeatDays.map(id => WEEKDAYS.find(w => w.id === id)?.name).filter(Boolean);
+      return `Повтор: ${days.join(', ')} • Время: ${ev.time || ''}`;
     }
-  };
-
-  const formatRepeatDays = (repeatDays) => {
-    if (!Array.isArray(repeatDays) || repeatDays.length === 0) return '';
-    const dayNames = repeatDays.map(id => WEEKDAYS.find(w => w.id === id)?.name).filter(Boolean);
-    return `Повтор: ${dayNames.join(', ')}`;
+    if (ev.date) {
+      try {
+        return new Date(ev.date).toLocaleString('ru-RU', { 
+          dateStyle: 'short', 
+          timeStyle: 'short' 
+        });
+      } catch {
+        return ev.date;
+      }
+    }
+    return '';
   };
 
   return (
@@ -109,20 +139,56 @@ function App() {
           value={form.title}
           onChange={e => handleFormChange('title', e.target.value)}
         />
-        
-        <input
-          type="date"
-          required
-          value={form.date}
-          onChange={e => handleFormChange('date', e.target.value)}
-        />
-        
+
+        {/* Свитчер повторяемости */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <label style={{ fontWeight: 600 }}>Повторяющееся событие</label>
+          <input
+            type="checkbox"
+            checked={form.isRepeated}
+            onChange={handleRepeatedSwitch}
+            style={{ width: 24, height: 24 }}
+          />
+        </div>
+
+        {/* Пикер даты (только если событие однократное) */}
+        {!form.isRepeated && (
+          <>
+            <input
+              type="date"
+              required
+              value={form.date}
+              onChange={e => handleFormChange('date', e.target.value)}
+            />
+          </>
+        )}
+
+        {/* Пикер времени */}
         <input
           type="time"
           required
           value={form.time}
           onChange={e => handleFormChange('time', e.target.value)}
         />
+
+        {/* Пикер дней недели для повторяемых событий */}
+        {form.isRepeated && (
+          <div className="repeat-days">
+            <label>Повторять в дни:</label>
+            <div className="weekdays-grid">
+              {WEEKDAYS.map(day => (
+                <label key={day.id} className="weekday-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={form.repeatDays.includes(day.id)}
+                    onChange={() => handleRepeatDayToggle(day.id)}
+                  />
+                  <span>{day.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Выбор эмодзи */}
         <div className="emoji-selector">
@@ -141,23 +207,6 @@ function App() {
           </div>
         </div>
 
-        {/* Выбор дней повторения */}
-        <div className="repeat-days">
-          <label>Повторять в дни:</label>
-          <div className="weekdays-grid">
-            {WEEKDAYS.map(day => (
-              <label key={day.id} className="weekday-checkbox">
-                <input
-                  type="checkbox"
-                  checked={form.repeatDays.includes(day.id)}
-                  onChange={() => handleRepeatDayToggle(day.id)}
-                />
-                <span>{day.name}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
         <button type="submit">Добавить</button>
       </form>
 
@@ -168,10 +217,7 @@ function App() {
               <div style={{ fontWeight: 600 }}>
                 {ev.emoji} {ev.title}
               </div>
-              <span>{formatEventDate(ev.date)}</span>
-              {ev.repeatDays && ev.repeatDays.length > 0 && (
-                <div className="repeat-info">{formatRepeatDays(ev.repeatDays)}</div>
-              )}
+              <span>{formatEventDate(ev)}</span>
             </div>
             <button onClick={() => deleteEvent(ev.id)}>Удалить</button>
           </li>
